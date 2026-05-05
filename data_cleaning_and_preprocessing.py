@@ -88,7 +88,7 @@ class DataProcessor:
     def map_binary(self, column, positive_value=None):
         unique_vals = self.df[column].dropna().unique()
 
-        if len(unique_vals) != 2:
+        if len(unique_vals) > 2:
             raise ValueError(f"{column} non è binaria")
 
         if positive_value is None:
@@ -114,7 +114,7 @@ class DataProcessor:
         return self
 
     def encode_onehot(self, columns):
-        encoder = OneHotEncoder(sparse=False, drop='first')
+        encoder = OneHotEncoder(sparse_output=False, drop='first', handle_unknown="ignore")
 
         encoded = encoder.fit_transform(self.df[columns])
         new_cols = encoder.get_feature_names_out(columns)
@@ -146,19 +146,25 @@ class DataProcessor:
     # =========================
 
     def variance_threshold(self, threshold=0.0):
+        numeric_df = self.df.select_dtypes(include=np.number)
+
+        if numeric_df.shape[1] == 0:
+            print("VarianceThreshold: nessuna colonna numerica trovata, salto.")
+            return self
+
         selector = VarianceThreshold(threshold)
 
-        numeric_df = self.df.select_dtypes(include=np.number)
-        selected = selector.fit_transform(numeric_df)
+        # forza numpy float (più robusto)
+        X_num = numeric_df.to_numpy(dtype=np.float64)
+        selected = selector.fit_transform(X_num)
 
         selected_cols = numeric_df.columns[selector.get_support()]
-        non_numeric = self.df.select_dtypes(exclude=np.number)
+        selected_df = pd.DataFrame(selected, columns=selected_cols, index=self.df.index)
 
-        self.df = pd.concat([
-            pd.DataFrame(selected, columns=selected_cols, index=self.df.index),
-            non_numeric
-        ], axis=1)
+        # tieni eventuali non numeriche (se ce ne sono)
+        non_numeric = self.df.drop(columns=numeric_df.columns)
 
+        self.df = pd.concat([selected_df, non_numeric], axis=1)
         return self
 
     # =========================

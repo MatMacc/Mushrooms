@@ -1,0 +1,9 @@
+numpy
+pandas
+#tensorflow==2.21.0
+tensorflow
+ml_dtypes
+ucimlrepo
+scikit-learn
+matplotlib
+seaborn
