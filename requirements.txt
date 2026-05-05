@@ -7,3 +7,4 @@ ucimlrepo
 scikit-learn
 matplotlib
 seaborn
+xgboost
