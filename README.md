@@ -71,10 +71,45 @@ During training, models are evaluated using:
 
 Metrics may vary slightly depending on split and random seed.  
 
+---
+
+## API (FastAPI)
+
+The project includes a small **FastAPI** service that loads the trained pipelines (preprocessing + model) and exposes simple prediction endpoints.
+
+### Available endpoints
+
+- `GET /`  
+  Health check / test endpoint.
+
+- `POST /predict/lr`  
+  Predict using **Logistic Regression** pipeline.
+
+- `POST /predict/xgb`  
+  Predict using **XGBoost** pipeline.
+
+- `POST /predict/nn`  
+  Predict using **Neural Network (SciKeras/Keras)** pipeline.
+
+Each endpoint:
+1. receives a JSON payload describing mushroom features
+2. converts it into a single-row `pandas.DataFrame`
+3. runs `.predict(...)` (or `.predict_proba(...)` for NN) on the loaded pipeline
+4. returns `"p"` (poisonous) or `"e"` (edible)
+
+### How the request is parsed
+
+The request body is validated with a **Pydantic model** (`app/model.py`).  
+Since the dataset columns contain hyphens (e.g. `cap-shape`), Pydantic aliases are used, and the server builds the dataframe with:
 
 ---
 
+## Docker
+
+The repository includes a `Dockerfile` to run the FastAPI service inside a container (useful for reproducible deployments).
 ## Repository Structure
+
+---
 
 Typical structure:
 
@@ -86,7 +121,6 @@ Typical structure:
   - `xgb_model_pipe.joblib`
   - `nn_model_pipe.joblib`
   - `columns.joblib`, `col_bin.joblib`, `col_hot.joblib` (helper artifacts)
-- `wrapper.py` / `data_cleaning_and_preprocessing.py` — preprocessing utilities (`DataProcessor`, `DataProcessorTransformer`)
+- `wrapper.py` / `data_preprocessing_prova.py` — preprocessing utilities (`DataProcessor`, `DataProcessorTransformer`)
 - `nn_model.py` — contains `build_model(...)` used by SciKeras (important for serialization)
 - `Dockerfile`
-
