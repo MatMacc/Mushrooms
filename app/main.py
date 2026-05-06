@@ -11,6 +11,8 @@ lr_model= joblib.load("models/lr_model_pipe.joblib")
 xgb_model = joblib.load("models/xgb_model_pipe.joblib")
 nn_model = joblib.load("models/nn_model_pipe.joblib")
 columns = joblib.load("models/columns.joblib")
+col_bin = joblib.load("models/col_bin.joblib")
+col_hot = joblib.load("models/col_hot.joblib")
 
 # -------------------------
 # TEST ENDPOINT
