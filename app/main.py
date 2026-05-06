@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.model import Wine
+from app.model import Mushroom
 import joblib
 import pandas as pd
 import numpy as np
@@ -9,6 +9,7 @@ app = FastAPI()
 # carica modello (con pipeline inclusa)
 lr_model= joblib.load("models/lr_model_pipe.joblib")
 xgb_model = joblib.load("models/xgb_model_pipe.joblib")
+nn_model = joblib.load("models/nn_model_pipe.joblib")
 columns = joblib.load("models/columns.joblib")
 
 # -------------------------
@@ -24,7 +25,7 @@ def read_root():
 # PREDICTION ENDPOINT
 # -------------------------
 @app.post("/predict/lr")
-def predict(data: Wine):
+def predict(data: Mushroom):
     df = pd.DataFrame([data.model_dump()]) 
     df = df[columns]
 
@@ -38,11 +39,25 @@ def predict(data: Wine):
 
 
 @app.post("/predict/xgb")
-def predict(data: Wine):
+def predict(data: Mushroom):
     df = pd.DataFrame([data.model_dump()]) 
     df = df[columns]
 
     pred = xgb_model.predict(df)[0]
+    
+    if isinstance(pred, np.generic):
+        pred = pred.item()
+
+    return {"Category": pred}
+
+
+
+@app.post("/predict/nn")
+def predict(data: Mushroom):
+    df = pd.DataFrame([data.model_dump()]) 
+    df = df[columns]
+
+    pred = nn_model.predict(df)[0]
     
     if isinstance(pred, np.generic):
         pred = pred.item()
