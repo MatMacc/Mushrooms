@@ -75,7 +75,7 @@ def predict(data: Mushroom):
         pred = pred.item()
 
     threshold = 0.5
-    pred = int(proba >= threshold)
+    pred = int(pred >= threshold)
     label = "p" if pred == 1 else "e"
     return {"Category": label}
 
