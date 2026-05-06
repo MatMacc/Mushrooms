@@ -30,43 +30,54 @@ def read_root():
 # -------------------------
 @app.post("/predict/lr")
 def predict(data: Mushroom):
-    df = pd.DataFrame([data.model_dump()]) 
-    df = df[columns]
+    df = pd.DataFrame([data.model_dump(by_alias=True)]) 
+    df = df.drop(columns=["poisonous"])
+    #df['poisonous'] = df['poisonous'].map({'p': 1, 'e': 0})
+    #df = df[columns]
 
     pred = lr_model.predict(df)[0]
     
     if isinstance(pred, np.generic):
         pred = pred.item()
 
-    return {"Category": pred}
+    label = "p" if pred == 1 else "e"
+    return {"Category": label}
 
 
 
 @app.post("/predict/xgb")
 def predict(data: Mushroom):
-    df = pd.DataFrame([data.model_dump()]) 
-    df = df[columns]
+    df = pd.DataFrame([data.model_dump(by_alias=True)]) 
+    df = df.drop(columns=["poisonous"])
+    #df['poisonous'] = df['poisonous'].map({'p': 1, 'e': 0})
+    #df = df[columns]
 
     pred = xgb_model.predict(df)[0]
     
     if isinstance(pred, np.generic):
         pred = pred.item()
-
-    return {"Category": pred}
+        
+    label = "p" if pred == 1 else "e"
+    return {"Category": label}
 
 
 
 @app.post("/predict/nn")
 def predict(data: Mushroom):
-    df = pd.DataFrame([data.model_dump()]) 
-    df = df[columns]
+    df = pd.DataFrame([data.model_dump(by_alias=True)]) # df = pd.DataFrame([payload_dict])
+    df = df.drop(columns=["poisonous"])
+    #df['poisonous'] = df['poisonous'].map({'p': 1, 'e': 0})
+    #df = df[columns]
 
     pred = nn_model.predict_proba(df)[0]
     
     if isinstance(pred, np.generic):
         pred = pred.item()
 
-    return {"Category": pred}
+    threshold = 0.5
+    pred = int(proba >= threshold)
+    label = "p" if pred == 1 else "e"
+    return {"Category": label}
 
  
     
