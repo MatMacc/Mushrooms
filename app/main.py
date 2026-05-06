@@ -3,6 +3,8 @@ from app.model import Mushroom
 import joblib
 import pandas as pd
 import numpy as np
+from nn_model import build_model 
+from wrapper import DataProcessorTransformer 
 
 app = FastAPI()
 
@@ -59,7 +61,7 @@ def predict(data: Mushroom):
     df = pd.DataFrame([data.model_dump()]) 
     df = df[columns]
 
-    pred = nn_model.predict(df)[0]
+    pred = nn_model.predict_proba(df)[0]
     
     if isinstance(pred, np.generic):
         pred = pred.item()
